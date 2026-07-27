@@ -21,13 +21,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
+      # Pages должен быть включён вручную один раз:
+      # Settings → Pages → Build and deployment → Source: "GitHub Actions".
+      # (Токен Actions не имеет права включать Pages сам.)
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v5
         with:
-          enablement: true
           static_site_generator: next
       - run: npm ci
       - name: Build (static export)
