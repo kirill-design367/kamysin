@@ -1,6 +1,7 @@
 import { site, asset, parseNum } from '@/lib/site';
 import ClientScripts from '@/components/ClientScripts';
 import MelonLogo from '@/components/MelonLogo';
+import MelonSphere from '@/components/MelonSphere';
 
 const { brand, contacts, hero, pain, services, scale, lead } = site;
 
@@ -9,6 +10,43 @@ const serviceIcons = [
   <svg key="1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5" /><path d="M8 8h8M8 12h8M8 16h5" /></svg>,
   <svg key="2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 13l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 8l2 5" /><path d="M5 13h14v4a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0H11a2 2 0 0 1-4 0H6a1 1 0 0 1-1-1z" /></svg>,
 ];
+
+type DItem = { left: string; top: string; w: string; op: number; speed: number; k: string; mob?: boolean };
+function Decor({ items }: { items: DItem[] }) {
+  return (
+    <div className="decor" aria-hidden="true">
+      {items.map((it, i) => (
+        <span key={i} className={'melon-d' + (it.mob ? '' : ' hide-mob')} data-speed={it.speed}
+          style={{ left: it.left, top: it.top, width: it.w, opacity: it.op }}>
+          <MelonSphere k={it.k} />
+        </span>
+      ))}
+    </div>
+  );
+}
+const DEC: Record<string, DItem[]> = {
+  hero: [
+    { left: '66%', top: '0%', w: 'clamp(150px,27vw,360px)', op: 0.16, speed: -0.10, k: 'ha', mob: true },
+    { left: '-5%', top: '54%', w: 'clamp(120px,21vw,270px)', op: 0.14, speed: -0.17, k: 'hb', mob: true },
+    { left: '11%', top: '16%', w: 'clamp(66px,9vw,120px)', op: 0.12, speed: 0.13, k: 'hc' },
+  ],
+  pain: [
+    { left: '79%', top: '4%', w: 'clamp(120px,18vw,240px)', op: 0.10, speed: -0.12, k: 'pa', mob: true },
+    { left: '-4%', top: '60%', w: 'clamp(100px,16vw,200px)', op: 0.09, speed: 0.15, k: 'pb' },
+  ],
+  do: [
+    { left: '-5%', top: '2%', w: 'clamp(120px,18vw,250px)', op: 0.10, speed: -0.10, k: 'da' },
+    { left: '80%', top: '58%', w: 'clamp(110px,16vw,220px)', op: 0.10, speed: 0.15, k: 'db', mob: true },
+  ],
+  scale: [
+    { left: '73%', top: '-8%', w: 'clamp(140px,22vw,300px)', op: 0.30, speed: -0.10, k: 'sa', mob: true },
+    { left: '-6%', top: '55%', w: 'clamp(110px,17vw,220px)', op: 0.22, speed: 0.14, k: 'sb' },
+  ],
+  lead: [
+    { left: '80%', top: '-4%', w: 'clamp(120px,18vw,240px)', op: 0.10, speed: -0.12, k: 'la', mob: true },
+    { left: '-5%', top: '52%', w: 'clamp(100px,16vw,200px)', op: 0.09, speed: 0.14, k: 'lb' },
+  ],
+};
 
 function Num({ value }: { value: string }) {
   const { count, suffix } = parseNum(value);
@@ -47,18 +85,19 @@ export default function Page() {
         <section className="hero" id="hero">
           <div className="hero-glow" aria-hidden="true" />
           <img className="hero-fountain" src={asset(hero.imageFountain)} alt="" aria-hidden="true" />
+          <Decor items={DEC.hero} />
           <div className="wrap hero-inner">
             <span className="badge-city reveal">🍉 {hero.badge}</span>
             <span className="eyebrow reveal d1">{hero.eyebrow}</span>
-            <h1 className="hero-title display reveal d2">
-              <span className="line">{hero.titleLine1}</span>
-              <span className="line"><span className="tsar">{hero.titleTsar}</span><span className="q">?</span></span>
-              <span className="line">{hero.titleLead}{' '}
+            <h1 className="hero-title display reveal">
+              <span className="line"><span className="line-i">{hero.titleLine1}</span></span>
+              <span className="line"><span className="line-i"><span className="tsar">{hero.titleTsar}</span><span className="q">?</span></span></span>
+              <span className="line"><span className="line-i">{hero.titleLead}{' '}
                 <span className="correct">
                   <span className="struck">{hero.struck}</span>
                   <span className="reklame">{hero.accentWord}</span>
                 </span>
-              </span>
+              </span></span>
             </h1>
             <p className="hero-sub reveal d3">{hero.sub}</p>
             <p className="hero-slogan reveal d4">«{hero.slogan}»</p>
@@ -90,9 +129,10 @@ export default function Page() {
 
         {/* ===== PAIN ===== */}
         <section className="section pain" id="pain">
+          <Decor items={DEC.pain} />
           <div className="wrap">
             <span className="eyebrow reveal">{pain.eyebrow}</span>
-            <h2 className="reveal">{pain.title}</h2>
+            <h2 className="reveal split">{pain.title}</h2>
             <p className="pain-lead reveal">{pain.lead}</p>
             <div className="pain-list">
               {pain.questions.map((q, i) => (
@@ -107,9 +147,10 @@ export default function Page() {
 
         {/* ===== WHAT WE DO ===== */}
         <section className="section do" id="uslugi">
+          <Decor items={DEC.do} />
           <div className="wrap">
             <span className="eyebrow reveal">{services.eyebrow}</span>
-            <h2 className="reveal">{services.title}</h2>
+            <h2 className="reveal split">{services.title}</h2>
             <p className="do-lead reveal">{services.lead}</p>
             <div className="cards">
               {services.items.map((s, i) => (
@@ -132,9 +173,10 @@ export default function Page() {
         {/* ===== SCALE ===== */}
         <section className="section scale" id="masshtab">
           <div className="seedrow" id="seedrow" aria-hidden="true" />
+          <Decor items={DEC.scale} />
           <div className="wrap">
             <span className="eyebrow reveal">{scale.eyebrow}</span>
-            <h2 className="reveal">{scale.title}</h2>
+            <h2 className="reveal split">{scale.title}</h2>
             <div className="bignum reveal">
               <span className="val"><Num value={scale.bigNumber} /></span>
               <span className="cap">{scale.bigCaption}</span>
@@ -159,10 +201,11 @@ export default function Page() {
 
         {/* ===== LEAD / FORM ===== */}
         <section className="section lead-sec" id="zayavka">
+          <Decor items={DEC.lead} />
           <div className="wrap lead-grid">
             <div>
               <span className="eyebrow reveal">{lead.eyebrow}</span>
-              <h2 className="reveal">{lead.title}</h2>
+              <h2 className="reveal split">{lead.title}</h2>
               <p className="sub reveal">{lead.sub}</p>
               <div className="contacts reveal d1" style={{ marginTop: 22 }}>
                 <a className="phone-big" href={tel}>
