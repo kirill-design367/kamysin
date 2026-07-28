@@ -24,27 +24,23 @@ function Decor({ items }: { items: DItem[] }) {
     </div>
   );
 }
+// Немного фоновых арбузов (перф: мало элементов, параллакс только на десктопе).
 const DEC: Record<string, DItem[]> = {
   hero: [
-    { left: '66%', top: '0%', w: 'clamp(150px,27vw,360px)', op: 0.16, speed: -0.10, k: 'ha', mob: true },
-    { left: '-5%', top: '54%', w: 'clamp(120px,21vw,270px)', op: 0.14, speed: -0.17, k: 'hb', mob: true },
-    { left: '11%', top: '16%', w: 'clamp(66px,9vw,120px)', op: 0.12, speed: 0.13, k: 'hc' },
+    { left: '67%', top: '1%', w: 'clamp(150px,27vw,360px)', op: 0.15, speed: -0.10, k: 'ha', mob: true },
+    { left: '-5%', top: '56%', w: 'clamp(110px,20vw,250px)', op: 0.13, speed: -0.16, k: 'hb' },
   ],
   pain: [
-    { left: '79%', top: '4%', w: 'clamp(120px,18vw,240px)', op: 0.10, speed: -0.12, k: 'pa', mob: true },
-    { left: '-4%', top: '60%', w: 'clamp(100px,16vw,200px)', op: 0.09, speed: 0.15, k: 'pb' },
+    { left: '80%', top: '6%', w: 'clamp(120px,18vw,230px)', op: 0.10, speed: -0.12, k: 'pa', mob: true },
   ],
   do: [
-    { left: '-5%', top: '2%', w: 'clamp(120px,18vw,250px)', op: 0.10, speed: -0.10, k: 'da' },
-    { left: '80%', top: '58%', w: 'clamp(110px,16vw,220px)', op: 0.10, speed: 0.15, k: 'db', mob: true },
+    { left: '-5%', top: '4%', w: 'clamp(120px,18vw,240px)', op: 0.10, speed: -0.10, k: 'da', mob: true },
   ],
   scale: [
-    { left: '73%', top: '-8%', w: 'clamp(140px,22vw,300px)', op: 0.30, speed: -0.10, k: 'sa', mob: true },
-    { left: '-6%', top: '55%', w: 'clamp(110px,17vw,220px)', op: 0.22, speed: 0.14, k: 'sb' },
+    { left: '74%', top: '-8%', w: 'clamp(140px,22vw,290px)', op: 0.28, speed: -0.10, k: 'sa', mob: true },
   ],
   lead: [
-    { left: '80%', top: '-4%', w: 'clamp(120px,18vw,240px)', op: 0.10, speed: -0.12, k: 'la', mob: true },
-    { left: '-5%', top: '52%', w: 'clamp(100px,16vw,200px)', op: 0.09, speed: 0.14, k: 'lb' },
+    { left: '80%', top: '-2%', w: 'clamp(110px,17vw,220px)', op: 0.10, speed: -0.12, k: 'la', mob: true },
   ],
 };
 
@@ -66,6 +62,8 @@ export default function Page() {
 
   return (
     <>
+      {/* приоритетная загрузка LCP-картинки hero */}
+      <link rel="preload" as="image" href={asset(hero.imageMain)} fetchPriority="high" />
       {/* ===== HEADER ===== */}
       <header className="hdr" id="hdr">
         <div className="wrap">
@@ -87,9 +85,9 @@ export default function Page() {
           <img className="hero-fountain" src={asset(hero.imageFountain)} alt="" aria-hidden="true" />
           <Decor items={DEC.hero} />
           <div className="wrap hero-inner">
-            <span className="badge-city reveal">🍉 {hero.badge}</span>
-            <span className="eyebrow reveal d1">{hero.eyebrow}</span>
-            <h1 className="hero-title display reveal">
+            <span className="badge-city">🍉 {hero.badge}</span>
+            <span className="eyebrow">{hero.eyebrow}</span>
+            <h1 className="hero-title display">
               <span className="line"><span className="line-i">{hero.titleLine1}</span></span>
               <span className="line"><span className="line-i"><span className="tsar">{hero.titleTsar}</span><span className="q">?</span></span></span>
               <span className="line"><span className="line-i">{hero.titleLead}{' '}
@@ -99,16 +97,16 @@ export default function Page() {
                 </span>
               </span></span>
             </h1>
-            <p className="hero-sub reveal d3">{hero.sub}</p>
-            <p className="hero-slogan reveal d4">«{hero.slogan}»</p>
-            <div className="hero-cta reveal d5">
+            <p className="hero-sub">{hero.sub}</p>
+            <p className="hero-slogan">«{hero.slogan}»</p>
+            <div className="hero-cta">
               <a className="btn btn-primary" href="#zayavka">{hero.ctaPrimary}</a>
               <a className="btn btn-ghost" href={tel}>📞 {contacts.phoneDisplay}</a>
             </div>
 
-            <div className="hero-media reveal d6">
+            <div className="hero-media">
               <div className="hero-photo">
-                <img src={asset(hero.imageMain)} alt={hero.imageMainAlt} />
+                <img src={asset(hero.imageMain)} alt={hero.imageMainAlt} width={880} height={550} fetchPriority="high" decoding="async" />
               </div>
               <div className="hero-tsar">
                 <img src={asset(hero.imageTsar)} alt={hero.imageTsarAlt} />
@@ -116,7 +114,7 @@ export default function Page() {
               <span className="tsar-tag">{hero.tsarTag}</span>
             </div>
 
-            <div className="trust reveal d7">
+            <div className="trust">
               {hero.trust.map((t, i) => (
                 <span key={i} style={{ display: 'contents' }}>
                   <span>{t}</span>
@@ -153,10 +151,11 @@ export default function Page() {
             <h2 className="reveal split">{services.title}</h2>
             <p className="do-lead reveal">{services.lead}</p>
             <div className="cards">
-              {services.items.map((s, i) => (
+              {services.items.map((s: { title: string; verb: string; text: string; image?: string }, i) => (
                 <article className={`card reveal${i ? ` d${i}` : ''}`} key={i}>
-                  <span className="num">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="ico" aria-hidden="true">{serviceIcons[i]}</span>
+                  {s.image
+                    ? <div className="card-photo"><img src={asset(s.image)} alt={`${s.title} ${s.verb}`} loading="lazy" width={800} height={500} /></div>
+                    : <><span className="num">{String(i + 1).padStart(2, '0')}</span><span className="ico" aria-hidden="true">{serviceIcons[i]}</span></>}
                   <h3>{s.title}<em>{s.verb}</em></h3>
                   <p>{s.text}</p>
                 </article>

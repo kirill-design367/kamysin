@@ -219,6 +219,7 @@ export default function Admin() {
           <T label="Заголовок" path={`services.items.${i}.title`} />
           <T label="Глагол (— доставим)" path={`services.items.${i}.verb`} />
           <T label="Описание" path={`services.items.${i}.text`} area />
+          <Img label="Фото карточки" path={`services.items.${i}.image`} />
         </div>
       ))}
       <StrList label="Форматы (чипы)" path="services.formats" />
