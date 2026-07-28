@@ -69,9 +69,10 @@ button{font-family:inherit; cursor:pointer}
 .hdr .wrap{display:flex; align-items:center; justify-content:space-between; height:66px; gap:16px}
 .brand{display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:700;
   text-transform:uppercase; letter-spacing:.02em; font-size:1.28rem; color:var(--ink)}
-.brand .melon{width:26px;height:26px;border-radius:50%;flex:none;
-  background:radial-gradient(circle at 50% 120%,var(--flesh) 0 42%,#fff 43% 47%,var(--rind) 48% 100%);
-  box-shadow:inset 0 0 0 2px var(--rind-deep)}
+.brand .melon-logo{width:30px;height:30px;flex:none;display:block;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.26))}
+.hdr.stuck .brand .melon-logo{transition:transform .4s var(--ease)}
+.brand:hover .melon-logo{transform:rotate(-8deg) scale(1.06)}
 .brand small{font-family:var(--font-body);font-weight:700;font-size:.56rem;letter-spacing:.22em;
   text-transform:uppercase;color:var(--ink-soft);display:block;margin-top:-3px}
 .hdr-right{display:flex; align-items:center; gap:14px}
@@ -123,24 +124,15 @@ button{font-family:inherit; cursor:pointer}
 .hero-title .tsar{color:var(--flesh)}
 .hero-title .q{color:var(--ink-soft)}
 .correct{position:relative;display:inline-block;margin-top:.08em}
-.struck{position:relative;color:var(--ink-soft);opacity:.55;display:inline-block;
-  transform:rotate(-2deg);font-size:.62em}
-.struck .strike{position:absolute;left:-6%;top:52%;width:112%;height:auto;overflow:visible;pointer-events:none}
-.struck .strike path{stroke:var(--flesh);stroke-width:9;fill:none;stroke-linecap:round;
-  stroke-dasharray:260;stroke-dashoffset:0}
-[data-js] .struck .strike path{stroke-dashoffset:260}
-[data-js] body.ready .struck .strike path{stroke-dashoffset:0;transition:stroke-dashoffset .55s ease 1s}
+.struck{position:relative;color:var(--ink-soft);opacity:.5;display:inline-block;font-size:.62em}
+/* классическое перечёркивание ровно по середине букв, «прорисовывается» слева направо */
+.struck::after{content:"";position:absolute;left:-2%;right:-2%;top:47%;height:.11em;
+  background:var(--flesh);border-radius:99px;transform:translateY(-50%);transform-origin:left center}
+[data-js] .struck::after{transform:translateY(-50%) scaleX(0)}
+[data-js] body.ready .struck::after{transform:translateY(-50%) scaleX(1);
+  transition:transform .5s cubic-bezier(.22,1,.36,1) .9s}
 .reklame{display:block;color:var(--flesh);transform:rotate(-1.5deg);position:relative;
   text-shadow:0 2px 0 color-mix(in srgb,var(--flesh-deep) 55%,transparent)}
-.reklame::after{content:attr(data-note);position:absolute;right:2%;top:-.7em;
-  font-family:var(--font-hand);text-transform:none;font-size:.28em;color:var(--rind-deep);
-  letter-spacing:0;transform:rotate(-6deg);white-space:nowrap;opacity:.9;transition:opacity .5s .9s}
-[data-js] .reklame::after{opacity:0}
-[data-js] body.ready .reklame::after{opacity:.9}
-@media (prefers-color-scheme:dark){.reklame::after{color:var(--rind-bright)}}
-:root[data-theme="dark"] .reklame::after{color:var(--rind-bright)}
-:root[data-theme="light"] .reklame::after{color:var(--rind-deep)}
-@media(max-width:540px){.reklame::after{display:none}}
 
 .hero-sub{max-width:52ch;margin:22px auto 0;font-size:var(--fs-lead);color:var(--ink-soft)}
 .hero-slogan{font-family:var(--font-hand);font-size:clamp(1.7rem,4.6vw,2.9rem);color:var(--rind);
@@ -314,14 +306,24 @@ button{font-family:inherit; cursor:pointer}
 .seed{position:absolute;width:12px;height:16px;background:var(--seed);
   border-radius:50% 50% 50% 50%/60% 60% 40% 40%;transform:rotate(20deg);opacity:.5}
 
-/* reveal — hidden ONLY when JS is active (data-js). Без JS весь контент виден. */
-[data-js] .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
-[data-js] .reveal.in{opacity:1;transform:none}
-.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}
+/* reveal — премиальный мягкий вход (только при JS; без JS весь контент виден).
+   Всё на GPU: opacity + transform (translateY + лёгкий scale), медленно, плавно. */
+[data-js] .reveal{opacity:0;transform:translateY(40px) scale(.985);
+  transition:opacity .95s cubic-bezier(.22,1,.36,1),transform 1.15s cubic-bezier(.22,1,.36,1);
+  will-change:opacity,transform}
+[data-js] .reveal.in{opacity:1;transform:translateY(0) scale(1);will-change:auto}
+.reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}
+.reveal.d4{transition-delay:.4s}.reveal.d5{transition-delay:.5s}
+.reveal.d6{transition-delay:.6s}.reveal.d7{transition-delay:.7s}
+
+/* Lenis (плавный скролл) */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto !important}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+.lenis.lenis-stopped{overflow:hidden}
 
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important;transition:none !important;scroll-behavior:auto}
   [data-js] .reveal,.reveal{opacity:1;transform:none}
-  .struck .strike path,[data-js] .struck .strike path{stroke-dashoffset:0}
-  .reklame::after,[data-js] .reklame::after{opacity:.9}
+  [data-js] .struck::after{transform:translateY(-50%) scaleX(1)}
 }

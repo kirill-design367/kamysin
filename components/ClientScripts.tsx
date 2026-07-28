@@ -1,5 +1,6 @@
 'use client';
 import { useEffect } from 'react';
+import Lenis from 'lenis';
 
 export default function ClientScripts() {
   useEffect(() => {
@@ -8,6 +9,27 @@ export default function ClientScripts() {
     const mbar = document.getElementById('mbar');
     const hero = document.getElementById('hero');
 
+    // ---- Lenis: премиальный плавный скролл (десктоп — колесо; тач остаётся нативным) ----
+    let lenis: Lenis | null = null;
+    let rafId = 0;
+    const anchors: HTMLAnchorElement[] = [];
+    const onAnchor = (e: Event) => {
+      const a = e.currentTarget as HTMLAnchorElement;
+      const href = a.getAttribute('href') || '';
+      if (href.length < 2) return;
+      const target = document.querySelector(href);
+      if (target && lenis) { e.preventDefault(); lenis.scrollTo(target as HTMLElement, { offset: -70 }); }
+    };
+    if (!rm) {
+      lenis = new Lenis({ lerp: 0.11, smoothWheel: true });
+      const raf = (t: number) => { lenis!.raf(t); rafId = requestAnimationFrame(raf); };
+      rafId = requestAnimationFrame(raf);
+      document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((a) => {
+        a.addEventListener('click', onAnchor); anchors.push(a);
+      });
+    }
+
+    // ---- header solidify + mobile CTA bar ----
     function onScroll() {
       if (hdr) hdr.classList.toggle('stuck', scrollY > 20);
       if (mbar && hero) mbar.classList.toggle('show', hero.getBoundingClientRect().bottom < 80);
@@ -15,10 +37,10 @@ export default function ClientScripts() {
     addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
-    // hero load reveal + strike draw
+    // ---- запуск входных анимаций (strike, hero) ----
     const t = setTimeout(() => document.body.classList.add('ready'), 80);
 
-    // seeds in scale block
+    // ---- семечки в блоке «Масштаб» ----
     const sr = document.getElementById('seedrow');
     if (sr && !sr.childElementCount) {
       for (let i = 0; i < 26; i++) {
@@ -33,15 +55,15 @@ export default function ClientScripts() {
       }
     }
 
-    // count up
-    function fmt(n: number) { return n.toLocaleString('ru-RU'); }
+    // ---- count up ----
+    const fmt = (n: number) => n.toLocaleString('ru-RU');
     function count(el: Element) {
       const e = el as HTMLElement;
       if (e.dataset.done) return; e.dataset.done = '1';
       const target = parseInt(e.getAttribute('data-count') || '', 10);
       if (isNaN(target)) return;
       if (rm) { e.textContent = fmt(target); return; }
-      const dur = 1100; let t0: number | null = null;
+      const dur = 1200; let t0: number | null = null;
       function step(ts: number) {
         if (t0 === null) t0 = ts;
         const p = Math.min((ts - t0) / dur, 1);
@@ -52,7 +74,7 @@ export default function ClientScripts() {
       requestAnimationFrame(step);
     }
 
-    // reveal on scroll
+    // ---- reveal on scroll ----
     const io = new IntersectionObserver((es) => {
       es.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -61,15 +83,14 @@ export default function ClientScripts() {
           io.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
+    }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
     document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
-    // count-up for bignum/stat values that may sit inside revealed blocks
     const numObs = new IntersectionObserver((es) => {
       es.forEach((entry) => { if (entry.isIntersecting) { count(entry.target); numObs.unobserve(entry.target); } });
     }, { threshold: 0.4 });
     document.querySelectorAll('[data-count]').forEach((el) => numObs.observe(el));
 
-    // form
+    // ---- form ----
     const form = document.getElementById('leadForm') as HTMLFormElement | null;
     const ok = document.getElementById('formOk');
     function onSubmit(ev: Event) {
@@ -94,7 +115,6 @@ export default function ClientScripts() {
       if (okWa) okWa.href = `https://wa.me/${waNum}?text=${enc}`;
       if (okTg) okTg.href = `https://t.me/${tgUser}`;
 
-      // real e-mail delivery via Formspree, if configured
       if ((provider === 'formspree' || provider === 'both') && formspree) {
         fetch(`https://formspree.io/f/${formspree}`, {
           method: 'POST',
@@ -104,7 +124,7 @@ export default function ClientScripts() {
       }
 
       form.style.display = 'none';
-      if (ok) { ok.classList.add('show'); ok.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'center' }); }
+      if (ok) { ok.classList.add('show'); if (lenis) lenis.scrollTo(ok, { offset: -100 }); else ok.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'center' }); }
     }
     form?.addEventListener('submit', onSubmit);
 
@@ -113,6 +133,9 @@ export default function ClientScripts() {
       io.disconnect(); numObs.disconnect();
       clearTimeout(t);
       form?.removeEventListener('submit', onSubmit);
+      anchors.forEach((a) => a.removeEventListener('click', onAnchor));
+      if (rafId) cancelAnimationFrame(rafId);
+      lenis?.destroy();
     };
   }, []);
   return null;

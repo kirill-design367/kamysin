@@ -1,5 +1,6 @@
 import { site, asset, parseNum } from '@/lib/site';
 import ClientScripts from '@/components/ClientScripts';
+import MelonLogo from '@/components/MelonLogo';
 
 const { brand, contacts, hero, pain, services, scale, lead } = site;
 
@@ -31,7 +32,7 @@ export default function Page() {
       <header className="hdr" id="hdr">
         <div className="wrap">
           <a className="brand" href="#top" aria-label="На главную">
-            <span className="melon" aria-hidden="true" />
+            <MelonLogo k="h" />
             <span>{brand.name}<small>{brand.tagline}</small></span>
           </a>
           <div className="hdr-right">
@@ -47,28 +48,26 @@ export default function Page() {
           <div className="hero-glow" aria-hidden="true" />
           <img className="hero-fountain" src={asset(hero.imageFountain)} alt="" aria-hidden="true" />
           <div className="wrap hero-inner">
-            <span className="badge-city">🍉 {hero.badge}</span>
-            <span className="eyebrow">{hero.eyebrow}</span>
-            <h1 className="hero-title display">
+            <span className="badge-city reveal">🍉 {hero.badge}</span>
+            <span className="eyebrow reveal d1">{hero.eyebrow}</span>
+            <h1 className="hero-title display reveal d2">
               <span className="line">{hero.titleLine1}</span>
               <span className="line"><span className="tsar">{hero.titleTsar}</span><span className="q">?</span></span>
               <span className="line">{hero.titleLead}{' '}
                 <span className="correct">
-                  <span className="struck">{hero.struck}
-                    <svg className="strike" viewBox="0 0 200 40" aria-hidden="true"><path d="M6 26 C60 12,150 30,194 16" /></svg>
-                  </span>
-                  <span className="reklame" data-note={`${hero.correctionNote} ✎`}>{hero.accentWord}</span>
+                  <span className="struck">{hero.struck}</span>
+                  <span className="reklame">{hero.accentWord}</span>
                 </span>
               </span>
             </h1>
-            <p className="hero-sub">{hero.sub}</p>
-            <p className="hero-slogan">«{hero.slogan}»</p>
-            <div className="hero-cta">
+            <p className="hero-sub reveal d3">{hero.sub}</p>
+            <p className="hero-slogan reveal d4">«{hero.slogan}»</p>
+            <div className="hero-cta reveal d5">
               <a className="btn btn-primary" href="#zayavka">{hero.ctaPrimary}</a>
               <a className="btn btn-ghost" href={tel}>📞 {contacts.phoneDisplay}</a>
             </div>
 
-            <div className="hero-media">
+            <div className="hero-media reveal d6">
               <div className="hero-photo">
                 <img src={asset(hero.imageMain)} alt={hero.imageMainAlt} />
               </div>
@@ -78,7 +77,7 @@ export default function Page() {
               <span className="tsar-tag">{hero.tsarTag}</span>
             </div>
 
-            <div className="trust">
+            <div className="trust reveal d7">
               {hero.trust.map((t, i) => (
                 <span key={i} style={{ display: 'contents' }}>
                   <span>{t}</span>
@@ -230,7 +229,7 @@ export default function Page() {
       {/* ===== FOOTER ===== */}
       <footer className="ftr">
         <div className="wrap">
-          <a className="brand" href="#top"><span className="melon" aria-hidden="true" />
+          <a className="brand" href="#top"><MelonLogo k="f" />
             <span>{brand.name}<small>{brand.tagline}</small></span></a>
           <small>{site.seo.description.split('.')[0]}.<br />
             © {new Date().getFullYear()} · ИНН {brand.inn} · рабочее название бренда</small>

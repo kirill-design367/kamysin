@@ -190,7 +190,6 @@ export default function Admin() {
       <T label="«Сила в …»" path="hero.titleLead" />
       <T label="Зачёркнутое слово" path="hero.struck" />
       <T label="Слово поверх (акцент)" path="hero.accentWord" />
-      <T label="Приписка от руки" path="hero.correctionNote" />
       <T label="Подзаголовок-оффер" path="hero.sub" area />
       <T label="Слоган" path="hero.slogan" />
       <T label="Текст кнопки" path="hero.ctaPrimary" />
