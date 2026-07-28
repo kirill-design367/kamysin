@@ -14,6 +14,9 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+# Pages нужно включить один раз вручную:
+# Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,20 +26,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      # Pages должен быть включён вручную один раз:
-      # Settings → Pages → Build and deployment → Source: "GitHub Actions".
-      # (Токен Actions не имеет права включать Pages сам.)
-      - name: Configure Pages
-        id: pages
-        uses: actions/configure-pages@v5
-        with:
-          static_site_generator: next
       - run: npm ci
       - name: Build (static export)
         run: npm run build
         env:
-          # Сайт на GitHub Pages живёт в подпапке /kamysin
-          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          # Сайт на GitHub Pages живёт в подпапке /kamysin.
+          # Если перейдёте на свой домен или Vercel — очистите это значение.
+          NEXT_PUBLIC_BASE_PATH: /kamysin
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
