@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, createContext, useContext } from 'react';
 import initial from '@/content/site.json';
 
 /* ---------- утилиты ---------- */
@@ -25,6 +25,52 @@ function setPath(obj: Any, path: string, value: Any): Any {
 // base64 <-> utf8
 const b64encode = (s: string) => btoa(unescape(encodeURIComponent(s)));
 const b64decode = (s: string) => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
+
+/* ---------- поля (на уровне модуля — стабильные, не пересоздаются при вводе) ---------- */
+type AdmApi = { data: Any; set: (path: string, value: Any) => void; onImage: (path: string, file: File) => void };
+const AdmCtx = createContext<AdmApi>({ data: {}, set: () => {}, onImage: () => {} });
+
+function T({ label, path, hint, area }: { label: string; path: string; hint?: string; area?: boolean }) {
+  const { data, set } = useContext(AdmCtx);
+  return (
+    <label className="fld">
+      <span>{label}{hint && <em>{hint}</em>}</span>
+      {area
+        ? <textarea value={getPath(data, path) ?? ''} onChange={(e) => set(path, e.target.value)} rows={3} />
+        : <input value={getPath(data, path) ?? ''} onChange={(e) => set(path, e.target.value)} />}
+    </label>
+  );
+}
+function Img({ label, path }: { label: string; path: string }) {
+  const { data, set, onImage } = useContext(AdmCtx);
+  return (
+    <label className="fld">
+      <span>{label}<em>картинка</em></span>
+      <div className="imgrow">
+        <input value={getPath(data, path) ?? ''} onChange={(e) => set(path, e.target.value)} placeholder="/uploads/файл.jpg" />
+        <label className="upl">Загрузить…
+          <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && onImage(path, e.target.files[0])} />
+        </label>
+      </div>
+    </label>
+  );
+}
+function StrList({ label, path }: { label: string; path: string }) {
+  const { data, set } = useContext(AdmCtx);
+  const arr: string[] = getPath(data, path) || [];
+  return (
+    <div className="fld">
+      <span className="lbl">{label}</span>
+      {arr.map((v, i) => (
+        <div className="listrow" key={i}>
+          <input value={v} onChange={(e) => set(`${path}.${i}`, e.target.value)} />
+          <button type="button" className="mini del" onClick={() => set(path, arr.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button type="button" className="mini add" onClick={() => set(path, [...arr, ''])}>+ добавить</button>
+    </div>
+  );
+}
 
 /* ---------- страница ---------- */
 export default function Admin() {
@@ -132,42 +178,6 @@ export default function Admin() {
     reader.readAsDataURL(file);
   }
 
-  /* ---------- поля ---------- */
-  const T = ({ label, path, hint, area }: { label: string; path: string; hint?: string; area?: boolean }) => (
-    <label className="fld">
-      <span>{label}{hint && <em>{hint}</em>}</span>
-      {area
-        ? <textarea value={getPath(data, path) ?? ''} onChange={(e) => set(path, e.target.value)} rows={3} />
-        : <input value={getPath(data, path) ?? ''} onChange={(e) => set(path, e.target.value)} />}
-    </label>
-  );
-  const Img = ({ label, path }: { label: string; path: string }) => (
-    <label className="fld">
-      <span>{label}<em>картинка</em></span>
-      <div className="imgrow">
-        <input value={getPath(data, path) ?? ''} onChange={(e) => set(path, e.target.value)} placeholder="/uploads/файл.jpg" />
-        <label className="upl">Загрузить…
-          <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && onImage(path, e.target.files[0])} />
-        </label>
-      </div>
-    </label>
-  );
-  const StrList = ({ label, path }: { label: string; path: string }) => {
-    const arr: string[] = getPath(data, path) || [];
-    return (
-      <div className="fld">
-        <span className="lbl">{label}</span>
-        {arr.map((v, i) => (
-          <div className="listrow" key={i}>
-            <input value={v} onChange={(e) => set(`${path}.${i}`, e.target.value)} />
-            <button type="button" className="mini del" onClick={() => set(path, arr.filter((_, j) => j !== i))}>✕</button>
-          </div>
-        ))}
-        <button type="button" className="mini add" onClick={() => set(path, [...arr, ''])}>+ добавить</button>
-      </div>
-    );
-  };
-
   const sections: [string, string, React.ReactNode][] = [
     ['brand', 'Бренд и реквизиты', <>
       <T label="Название компании" path="brand.name" hint="заглушка — заменить" />
@@ -268,6 +278,7 @@ export default function Admin() {
   ];
 
   return (
+    <AdmCtx.Provider value={{ data, set, onImage }}>
     <div className="adm">
       <style>{CSS}</style>
       <header className="adm-hd">
@@ -311,19 +322,20 @@ export default function Admin() {
         <p className="muted foot">После «Сохранить на GitHub» сайт автоматически пересобирается 1–2 минуты. Если что-то пошло не так — просто перезагрузите эту страницу, несохранённые правки сбросятся.</p>
       </div>
     </div>
+    </AdmCtx.Provider>
   );
 }
 
 const CSS = `
-.adm{min-height:100vh;background:#0f130d;color:#eef0e6;font-family:var(--font-manrope),system-ui,sans-serif;padding-bottom:120px}
+.adm{min-height:100vh;background:#0f130d;color:#eef0e6;font-family:var(--font-firs),system-ui,sans-serif;padding-bottom:120px}
 .adm *{box-sizing:border-box}
 .adm-hd{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:12px;
   padding:14px 20px;background:#0b0f09;border-bottom:1px solid #26301f}
-.adm-hd b{font-family:var(--font-oswald);font-size:1.2rem;letter-spacing:.02em}
+.adm-hd b{font-family:var(--font-firs);font-size:1.2rem;letter-spacing:.02em}
 .adm-hd span{color:#8a977c;margin-left:10px;font-size:.85rem}
 .adm-wrap{max-width:760px;margin:0 auto;padding:20px}
 .conn{background:#141a11;border:1px solid #2a3420;border-radius:14px;padding:20px;margin-bottom:18px}
-.conn h2{font-family:var(--font-oswald);text-transform:uppercase;letter-spacing:.05em;font-size:1.1rem;margin:0 0 8px}
+.conn h2{font-family:var(--font-firs);text-transform:uppercase;letter-spacing:.05em;font-size:1.1rem;margin:0 0 8px}
 .conn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .conn-btns{margin-top:12px}
 .muted{color:#8a977c;font-size:.85rem;line-height:1.5}
@@ -333,7 +345,7 @@ const CSS = `
 .status.err{background:#3a1518;color:#ff9aa5;border:1px solid #5c1f26}
 .status.info{background:#12233a;color:#8fc6ff;border:1px solid #1d3a5c}
 .sect{background:#141a11;border:1px solid #2a3420;border-radius:14px;margin-bottom:12px;overflow:hidden}
-.sect>summary{cursor:pointer;padding:16px 18px;font-family:var(--font-oswald);text-transform:uppercase;letter-spacing:.04em;
+.sect>summary{cursor:pointer;padding:16px 18px;font-family:var(--font-firs);text-transform:uppercase;letter-spacing:.04em;
   font-size:1rem;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
 .sect>summary::after{content:"▾";color:#5f6e50}
 .sect[open]>summary::after{content:"▴"}
@@ -352,7 +364,7 @@ const CSS = `
 .listrow,.listrow2{display:flex;gap:8px;align-items:center}
 .listrow2{display:grid;grid-template-columns:1fr 1.4fr auto}
 .subcard{background:#0f150c;border:1px solid #26301f;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
-.subcard b{font-family:var(--font-oswald);color:#e2564a;font-size:.9rem}
+.subcard b{font-family:var(--font-firs);color:#e2564a;font-size:.9rem}
 .mini{background:#233019;border:1px solid #35492a;color:#cfe8d6;border-radius:8px;padding:8px 14px;font:inherit;
   font-size:.85rem;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
 .mini:hover{background:#2c3d20}
